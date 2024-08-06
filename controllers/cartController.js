@@ -15,65 +15,83 @@ class CartController extends BaseController {
     }
 
 
-   async checkOutOfStock(_id) {
+    async checkOutOfStock(_id) {
         let product = new ProductsController();
         let result = await product.getResource(_id);
-        if(result.error){
-            return {error:true , message:result.message? result.message : 'Not found'}
+        if (result.error) {
+            return {error: true, message: result.message ? result.message : 'Not found'}
         }
-        if(result && result.data && result.data[0].stock > 0){
+        if (result && result.data && result.data[0].stock > 0) {
             result.data[0].stock -= 1;
-            product.req_body = {stock:result.data[0].stock}
-          await product.updateResource(result.data[0]._id);
-            return {error:false,message:''}
-        }else{
-            return {error:true, message:"Item is out of stock"}
+            product.req_body = {stock: result.data[0].stock}
+            await product.updateResource(result.data[0]._id);
+            return {error: false, message: ''}
+        } else {
+            return {error: true, message: "Item is out of stock"}
         }
 
     }
 
 
-    async prepareCart(user_id,product_id){
-      let userCart = await cartModel.findOne({userId:user_id},{},{}).exec();
-      if(userCart && userCart._id){
-          let body ={};
-          let items = userCart.items;
-          let index = items.findIndex(item => item.product_id === product_id);
-          if(index > -1){
-              items[index].quantity += 1
-          }else {
-              items.push({
-                  product_id: product_id,
-                  quantity: 1
-              })
-          }
-          body['items'] = items;
-          let productDetails = await products.findOne({_id:product_id},{},{}).exec();
-          let productPrice = productDetails.price
-          if(productDetails && productDetails.discount){
-              productPrice = (1 * productDetails.price) * (productDetails.discount/100);
-          }
-          body['cartTotal'] = userCart.cartTotal + productPrice
-          return {error:false,body:body,_id:userCart._id}
-      }else {
-        let item = [
-            {
-                product_id:product_id,
-                quantity:1
+    async prepareCart(user_id, product_id) {
+        let userCart = await cartModel.findOne({userId: user_id}, {}, {}).exec();
+        if (userCart && userCart._id) {
+            let body = {};
+            let items = userCart.items;
+            let index = items.findIndex(item => item.product_id === product_id);
+            if (index > -1) {
+                items[index].quantity += 1
+            } else {
+                items.push({
+                    product_id: product_id,
+                    quantity: 1
+                })
             }
-        ];
-        let body = {};
-        body['userId']= user_id;
-        body['items'] = item;
-        body['quantity'] = 1;
-        let productDetails = await products.findOne({_id:product_id},{},{}).exec();
-        if(productDetails && productDetails.discount){
-            body['cartTotal'] = (1 * productDetails.price) * (productDetails.discount/100);
+            body['items'] = items;
+            body['cartTotal'] = await this.calculateTotalAmount(items)
+            return {error: false, body: body, _id: userCart._id}
+        } else {
+            let item = [
+                {
+                    product_id: product_id,
+                    quantity: 1
+                }
+            ];
+            let body = {};
+            body['userId'] = user_id;
+            body['items'] = item;
+            body['quantity'] = 1;
+            body['cartTotal'] = await this.calculateTotalAmount(item)
+            return {error: false, body: body, _id: null}
         }
-          body['cartTotal'] = 1 * productDetails.price
-        return {error:false, body:body,_id:null}
+    }
 
-      }
+
+    async removeCartItems(cartInfo, product_id) {
+        let items = cartInfo.items
+        let findIndex = items.findIndex(item => item.product_id === product_id);
+        if (findIndex > -1) {
+            items[findIndex].quantity > 1 ? items[findIndex].quantity -= 1 : items.splice(findIndex,1)
+            let product = await products.findOne({_id: product_id}, {}, {}).exec();
+            product['stock'] += 1
+            let productController = new ProductsController();
+            productController.req_body = product
+            await productController.updateResource(product_id)
+            cartInfo['cartTotal'] = (items && items.length) ? await this.calculateTotalAmount(items) : 0;
+            return {error: false, body: cartInfo}
+        } else {
+            return {error: true, message: 'Items not found in cart'}
+        }
+    }
+
+    async calculateTotalAmount(items) {
+        let cartTotal = 0
+        await Promise.all(items.map(async (item) => {
+            let productDetails = await products.findOne({_id: item.product_id}, {}, {}).exec();
+            const discountMultiplier = productDetails.discount ? (1 - (productDetails.discount / 100)) : 1;
+            cartTotal += productDetails.price * item.quantity * discountMultiplier;
+        }))
+        return cartTotal
     }
 
 

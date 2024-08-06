@@ -68,11 +68,11 @@ class MongooseOperations {
         try {
             const entityModel = mongoose.model(entityType, entityType[schemaName]);
             let query;
-            if (Object.keys(fields).length) {
-                query = entityModel.find(fields)
-            } else {
+            // if (Object.keys(fields).length) {
+            //     query = entityModel.find(fields)
+            // } else {
                 query = entityModel.find({'_id': entityId })
-            }
+            // }
             if (populatedFields) {
                 for (let field in populatedFields) {
                     query.populate(field, populatedFields[field]);

@@ -83,7 +83,7 @@ class BaseController {
 
     async getResource(entityId, populatedFields = {}, fields = {}, conditions = {}) {
         try {
-            let result = await mongooseOperation.retrieveMethod(this.entityType, entityId, this.entitySchema, populatedFields, fields, conditions);
+            let result = await mongooseOperation.retrieveMethod(this.entityType, entityId, this.entitySchema, populatedFields, fields);
             if (result.error) {
                 return {error: true, message: result.message}
             }
