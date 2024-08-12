@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
-
-
-let ordersModelSchema = new mongoose.Schema({
+let ordersModel = new mongoose.Schema({
     _id: {
         type: String,
         require: true
@@ -10,10 +8,13 @@ let ordersModelSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.String,
         require: true,
         ref: "users"
+
+
     },
     orderStatus: {
         type: String,
-        require: true
+        require: true,
+        enum:['accepted','delivered','cancelled']
     },
     cartId: {
         type: mongoose.Schema.Types.String,
@@ -25,18 +26,29 @@ let ordersModelSchema = new mongoose.Schema({
         ref:'userAddress',
         require:true
     },
+    paymentType:{
+        type:String,
+        require:false,
+        default:'cod'
+    },
+    paymentStatus:{
+        type:String,
+        require:false,
+        enum:['paid','unpaid'],
+        default:'unpaid'
+    },
     orderDate:{
         type:Number,
-        require:true,
+        require:false,
         default:Date.now()
     },
     updatedDate:{
         type:Number,
-        require:true,
+        require:false,
         default:Date.now()
     }
 })
 
-let orders = mongoose.model('orders',ordersModelSchema,'orders');
+let orders = mongoose.model('orders',ordersModel,'orders');
 
 export default orders

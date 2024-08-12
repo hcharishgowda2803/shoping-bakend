@@ -43,7 +43,9 @@ router.put('/:_id',async(req,res)=>{
 
 router.get('/:resource_id',async(req,res)=>{
     let resourceController = new OrdersController();
-    let result = await resourceController.getResource(req.params.result);
+    let result = await resourceController.getResource(req.params.resource_id,{
+        cartId:""
+    });
     if(result.error){
         return handleError(500,result.error,res);
     }

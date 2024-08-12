@@ -1,6 +1,6 @@
 import BaseController from "./BaseController.js";
 import userRegistrationModel from "../models/userRegistrationModel.js";
-import bycrpt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {secret_key} from "../config/config.js";
 
@@ -36,8 +36,8 @@ class UserRegistrationController extends BaseController {
 
     async bcrypt(password) {
         try {
-            const salt = await bycrpt.genSalt(10);
-            return await bycrpt.hash(password, salt)
+            const salt = await bcrypt.genSalt(10);
+            return await bcrypt.hashSync(password, salt)
         } catch (error) {
             return error
         }
@@ -48,7 +48,7 @@ class UserRegistrationController extends BaseController {
         let {emailId, password} = this.req_body;
         const userData = await userRegistrationModel.findOne({emailId: emailId}, {}, {}).exec();
         if (userData) {
-            const passwordMatch = await bycrpt.compare(password, userData.password);
+            const passwordMatch = await bcrypt.compare(password, userData.password);
             if (passwordMatch) {
                 let token = await this.signToken(userData._id);
                 return {error: false, data: {token: token, user_id: userData._id}}

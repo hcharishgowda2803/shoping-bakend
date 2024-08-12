@@ -8,6 +8,8 @@ import userAddressRoute from "./routes/userAddressRoute.js";
 import productsRoutes from "./routes/productsRoutes.js";
 import wishListRoutes from "./routes/wishListRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
+import ordersRoute from "./routes/ordersRoute.js";
+import orderReviewRoutes from "./routes/orderReviewRoutes.js";
 
 
 const app = express();
@@ -29,6 +31,8 @@ app.use('/usersAddress',userAddressRoute);
 app.use('/products',productsRoutes);
 app.use('/wishList',wishListRoutes);
 app.use('/userCart', cartRoutes);
+app.use('/orders',ordersRoute);
+app.use('/review',orderReviewRoutes);
 
 
 
