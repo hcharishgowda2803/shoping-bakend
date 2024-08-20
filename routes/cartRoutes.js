@@ -34,6 +34,7 @@ router.post('/', async (req, res) => {
         return handleError(500, outOfStock.message, res)
     }
     let cartItems = await resourceController.prepareCart(req.body.userId, req.body.productDetails);
+
     if (cartItems.error) {
         handleError(500, 'internal server error', res)
     }

@@ -1,4 +1,5 @@
 import BaseController from "./BaseController.js";
+import orderStatus from "../models/orderTrackingModel.js";
 
 
 class OrderTrackingController extends  BaseController {
@@ -8,7 +9,7 @@ class OrderTrackingController extends  BaseController {
 
     constructor() {
         super();
-        super.initSchema(this.entityType,this.entitySchema)
+        super.initSchema(this.entityType,this.entitySchema,orderStatus)
 
     }
 

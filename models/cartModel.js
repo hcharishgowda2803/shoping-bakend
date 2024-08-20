@@ -29,7 +29,7 @@ const CartSchema = new mongoose.Schema({
     },
     created_at:{
         type:Number,
-        require:true,
+        require:false,
         default: Date.now()
     }
 })

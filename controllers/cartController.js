@@ -22,9 +22,13 @@ class CartController extends BaseController {
             return {error: true, message: result.message ? result.message : 'Not found'}
         }
         if (result && result.data && result.data[0].stock > 0) {
+
             result.data[0].stock -= 1;
             product.req_body = {stock: result.data[0].stock}
-            await product.updateResource(result.data[0]._id);
+            let updateResult = await product.updateResource(result.data[0]._id);
+            if(updateResult.error){
+                return {error:true,message: updateResult.message ? updateResult.message : 'Failed to update product stock'}
+            }
             return {error: false, message: ''}
         } else {
             return {error: true, message: "Item is out of stock"}
@@ -48,7 +52,8 @@ class CartController extends BaseController {
                 })
             }
             body['items'] = items;
-            body['cartTotal'] = await this.calculateTotalAmount(items)
+            body['cartTotal'] = await this.calculateTotalAmount(items);
+            body['userId'] = user_id;
             return {error: false, body: body, _id: userCart._id}
         } else {
             let item = [

@@ -2,6 +2,8 @@ import express from 'express';
 import OrderReviewController from "../controllers/orderReviewController.js";
 import {handleError,response} from "../utils/response.js";
 import OrderTrackingController from "../controllers/orderTrackingController.js";
+import OrdersController from "../controllers/ordersController.js";
+import mongoose from "mongoose";
 
 
 
@@ -18,7 +20,21 @@ router.post('/', async (req, res) => {
     if(result.error){
         return handleError(500, result.message, res);
     }
-    return response(200, {data: result.data}, res)
+    if(!result.error && result.data){
+      let orderController = new OrdersController();
+        orderController.req_body = {
+          orderReviewId:result.data._id,
+          orderReviewed:1
+      }
+      let findOrder = await orderController.getResource(req.body.orderId);
+        if(!findOrder.error && findOrder.data && findOrder.data._id && !findOrder.data.orderReviewed){
+            let updateOrder = await orderController.updateResource(req.body.orderId);
+        }else{
+            return handleError(500,'Review already given',res)
+        }
+        return response(200, {data: result.data}, res)
+    }
+
 })
 
 

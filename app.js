@@ -10,6 +10,7 @@ import wishListRoutes from "./routes/wishListRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import ordersRoute from "./routes/ordersRoute.js";
 import orderReviewRoutes from "./routes/orderReviewRoutes.js";
+import orderTrackingRoute from "./routes/orderTrackingRoute.js";
 
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/wishList',wishListRoutes);
 app.use('/userCart', cartRoutes);
 app.use('/orders',ordersRoute);
 app.use('/review',orderReviewRoutes);
+app.use('/tracking',orderTrackingRoute)
 
 
 

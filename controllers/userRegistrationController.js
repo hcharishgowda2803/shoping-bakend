@@ -59,6 +59,8 @@ class UserRegistrationController extends BaseController {
     }
 
 
+
+
     async signToken(id){
         try{
             let payLoad = {

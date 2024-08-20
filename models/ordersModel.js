@@ -7,9 +7,7 @@ let ordersModel = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.String,
         require: true,
-        ref: "users"
-
-
+        ref: "userRegistrationModel"
     },
     orderStatus: {
         type: String,
@@ -29,7 +27,7 @@ let ordersModel = new mongoose.Schema({
     paymentType:{
         type:String,
         require:false,
-        default:'cod'
+        default:'COD'
     },
     paymentStatus:{
         type:String,
@@ -46,6 +44,16 @@ let ordersModel = new mongoose.Schema({
         type:Number,
         require:false,
         default:Date.now()
+    },
+    orderReviewId:{
+        type:mongoose.Schema.Types.String,
+        require:false,
+        ref:'orderReviews',
+    },
+    orderReviewed:{
+        type:Number,
+        require:false,
+        default:0
     }
 })
 

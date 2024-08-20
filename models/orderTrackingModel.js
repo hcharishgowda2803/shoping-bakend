@@ -18,7 +18,7 @@ let orderTrackingSchema = new mongoose.Schema({
     },
     createdAt:{
         type:Number,
-        require:true,
+        require:false,
         default:Date.now()
     }
 })

@@ -52,7 +52,7 @@ class BaseController {
     async createEntity() {
         try {
             let validateResult = await this.validateSchemaFields();
-            if(validateResult.error){
+            if (validateResult.error) {
                 return {error: true, message: validateResult.message}
             }
             let result = await mongooseOperation.createMethod(this.entityType, this.entitySchema, this.req_body);
@@ -71,6 +71,11 @@ class BaseController {
 
     async getAllResource(populatedFields = {}, fields = {}) {
         try {
+            let validate;
+            validate =  await this.validateQueryParams();
+            if (validate.error) {
+                return validate;
+            }
             let result = await mongooseOperation.collectionMethod(this.entityType, this.entitySchema, this.skip, this.limit, populatedFields, this.filteredParams, this.sortParams, fields);
             if (result.error) {
                 return {error: true, message: result.message ? result.message : "Internal Server Error"}
@@ -104,10 +109,10 @@ class BaseController {
 
     async updateResource(entityId) {
         try {
-            let validateResult = await this.validateSchemaFields();
-            if(validateResult.error){
-                return {error: true, message: validateResult.message}
-            }
+            // let validateResult = await this.validateSchemaFields();
+            // if (validateResult.error) {
+            //     return {error: true, message: validateResult.message}
+            // }
             let updatedResult = await mongooseOperation.updateMethod(this.entityType, entityId, this.entitySchema, this.req_body);
             if (updatedResult.error) {
                 return {error: true, message: updatedResult.message}
@@ -157,17 +162,50 @@ class BaseController {
         }
 
         const missingFields = schemaFields.filter(field => {
-           if(field !== 'id'){
-               return schemaDetails[field].require &&  !req_body_field.includes(field)
-           }
+            if (field !== '_id') {
+                return schemaDetails[field].require && !req_body_field.includes(field)
+            }
         })
-        if(missingFields.length > 0){
+        if (missingFields.length > 0) {
             errorMessage = `${missingFields.join(', ')} ${missingFields.length === 1 ? 'is' : 'are'} missing in the request body`;
         }
         if (errorMessage) {
-            return { error: true, message: errorMessage };
+            return {error: true, message: errorMessage};
         }
-        return { error: false, message: 'All required fields are present in the request body' };
+        return {error: false, message: 'All required fields are present in the request body'};
+    }
+
+
+    async validateQueryParams() {
+        let errorMessage = '';
+        let schemaDetails = this.schemaDetails;
+        let keys = Object.keys(this.queryParams);
+        keys.forEach(key => {
+            if (errorMessage) {
+                return false;
+            }
+            let data = {
+                type: 'filter',
+                 field_name:key,
+                 operator:'eq',
+                field_value:this.queryParams[key]
+            }
+            if (!this.filteredParams[data.field_name]) {
+                this.filteredParams[data.field_name] = {};
+            }
+            if (!this.filteredParams[data.field_name][`$${data.operator}`]) {
+                this.filteredParams[data.field_name][`$${data.operator}`] = '';
+            }
+            if (schemaDetails[data.field_name] && schemaDetails[data.field_name].type.name === 'Number') {
+                data.field_value = parseInt(data.field_value);
+            }
+            this.filteredParams[data.field_name][`$${data.operator}`] = data.field_value;
+
+        })
+        if (errorMessage) {
+            return {error: true, message: errorMessage, status: 400};
+        }
+        return {error: false, message: ''};
     }
 
 
